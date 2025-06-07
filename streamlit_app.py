@@ -4,8 +4,8 @@ from matplotlib import font_manager
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-import os
 import re
+import os
 
 # === フォントのフルパスを取得（Streamlit Cloud対応）===
 font_path = os.path.join(".streamlit", "fonts", "ipaexg.ttf")
@@ -67,7 +67,9 @@ def get_visitor_data():
         except Exception as e:
             st.error(f"{url} 読込失敗: {e}")
     df = pd.DataFrame(data, columns=["日付", "来場者数", "AD証入場者数"])
-    df["日付"] = pd.to_datetime(df["日付"])
+    df = pd.DataFrame(data, columns=["日付", "来場者数", "AD証入場者数"])
+    df["日付"] = pd.to_datetime(df["日付"], errors="coerce")
+    df = df.dropna(subset=["日付"])  # ← この行を追加
     df.sort_values("日付", inplace=True)
     return df
 
