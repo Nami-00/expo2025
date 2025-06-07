@@ -96,6 +96,7 @@ if st.button("🔄 データを更新して再表示"):
 else:
     df = get_visitor_data()
 
+
 # ===== 前処理 =====
 df["曜日番号"] = df["日付"].dt.weekday
 weekday_map = {0:"月",1:"火",2:"水",3:"木",4:"金",5:"土",6:"日"}
@@ -103,6 +104,8 @@ df["曜日"] = df["曜日番号"].map(weekday_map)
 df["週"] = df["日付"].dt.to_period("W-SUN").apply(lambda r: r.start_time)
 
 # ===== ピボット =====
+order = ["日","月","火","水","木","金","土"]
+pivot_df = pivot_df.reindex(order)
 pivot_df = df.pivot(index="曜日", columns="週", values="来場者数")
 
 # ===== グラフ表示 =====
@@ -129,13 +132,20 @@ axs[1].set_xlabel("曜日")
 axs[1].set_ylabel("人数")
 axs[1].legend(title="週の開始日", fontsize=8)
 
+# x 軸ラベルを改めて設定（念のため）
+axs[1].set_xticks(range(len(order)))
+axs[1].set_xticklabels(order)
+
 # 曜日平均の線
-for i, day in enumerate(pivot_df.index):
-    values = pivot_df.iloc[i].dropna()
-    if len(values) == 0:
-        continue
+for i, day in enumerate(order):
+    values = pivot_df.loc[day].dropna()
+    if len(values)==0: continue
     avg = values.mean()
-    axs[1].hlines(y=avg, xmin=i - 0.4, xmax=i + 0.4, colors='red', linestyles='dashed', alpha=0.8)
-    axs[1].text(i + 0.45, avg, f"{avg/10000:.1f}万", color='red', fontsize=9, va='center')
+    axs[1].hlines(y=avg, xmin=i-0.4, xmax=i+0.4,
+                  colors='red', linestyles='dashed', alpha=0.8)
+    axs[1].text(i+0.45, avg, f"{avg/10000:.1f}万",
+                color='red', fontsize=9, va='center')
+
+plt.tight_layout()
 
 st.pyplot(fig)
