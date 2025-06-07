@@ -106,7 +106,6 @@ df["週"] = df["日付"].dt.to_period("W-SUN").apply(lambda r: r.start_time)
 # ===== ピボット =====
 order = ["日","月","火","水","木","金","土"]
 pivot_df = pivot_df.reindex(order)
-pivot_df = df.pivot(index="曜日", columns="週", values="来場者数")
 
 # ===== グラフ表示 =====
 fig, axs = plt.subplots(1, 2, figsize=(16, 6))
