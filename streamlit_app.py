@@ -83,13 +83,12 @@ else:
 
 # ===== 前処理 =====
 df["曜日番号"] = df["日付"].dt.weekday
+weekday_map = {0:"月",1:"火",2:"水",3:"木",4:"金",5:"土",6:"日"}
+df["曜日"] = df["曜日番号"].map(weekday_map)
 df["週"] = df["日付"].dt.to_period("W-SUN").apply(lambda r: r.start_time)
-df["曜日"] = df["日付"].dt.day_name(locale="ja_JP").str[:1]
 
 # ===== ピボット =====
-pivot_df = df.pivot(index="曜日番号", columns="週", values="来場者数")
-weekday_labels = ["月", "火", "水", "木", "金", "土", "日"]
-pivot_df.index = weekday_labels[:len(pivot_df)]
+pivot_df = df.pivot(index="曜日", columns="週", values="来場者数")
 
 # ===== グラフ表示 =====
 fig, axs = plt.subplots(1, 2, figsize=(16, 6))
