@@ -7,7 +7,6 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import os
-import altair as alt
 
 st.set_page_config(layout="wide")
 st.title("大阪・関西万博 来場者数分析")
@@ -81,12 +80,12 @@ def get_visitor_data():
                 data.append([date, visitors, ad])
         except Exception as e:
             st.error(f"{url} 読込失敗: {e}")
-    df = pd.DataFrame(data, columns=["日付", "来場者数", "AD証入場者数"])
-    df = pd.DataFrame(data, columns=["日付", "来場者数", "AD証入場者数"])
+    df = pd.DataFrame(data, columns=["日付","来場者数","AD証入場者数"])
     df["日付"] = pd.to_datetime(df["日付"], errors="coerce")
-    df = df.dropna(subset=["日付"])  # ← この行を追加
+    df.dropna(subset=["日付"], inplace=True)
     df.sort_values("日付", inplace=True)
     return df
+df = get_visitor_data()
 
 # ===== ボタン付きUI =====
 if st.button("🔄 データを更新して再表示"):
@@ -103,7 +102,9 @@ weekday_map = {0:"月",1:"火",2:"水",3:"木",4:"金",5:"土",6:"日"}
 df["曜日"] = df["曜日番号"].map(weekday_map)
 df["週"] = df["日付"].dt.to_period("W-SUN").apply(lambda r: r.start_time)
 
-# ===== ピボット =====
+
+# ピボット＆並び替え
+pivot_df = df.pivot(index="曜日", columns="週", values="来場者数")
 order = ["日","月","火","水","木","金","土"]
 pivot_df = pivot_df.reindex(order)
 
