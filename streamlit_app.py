@@ -1,24 +1,39 @@
 import streamlit as st
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from matplotlib import font_manager
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 import re
 import os
-
-# === フォントのフルパスを取得（Streamlit Cloud対応）===
-font_path = os.path.join(".streamlit", "fonts", "ipaexg.ttf")
-
-# === フォントが存在する場合のみ設定 ===
-if os.path.isfile(font_path):
-    font_prop = font_manager.FontProperties(fname=font_path)
-    plt.rcParams["font.family"] = font_prop.get_name()
-else:
-    print("⚠ フォントが見つかりません。日本語が文字化けする可能性があります。")
+import altair as alt
 
 st.set_page_config(layout="wide")
 st.title("大阪・関西万博 来場者数分析")
+
+# 1) フォントフォルダを探す
+font_dir = os.path.join(os.getcwd(), ".streamlit", "fonts")
+if not os.path.isdir(font_dir):
+    st.error(f"フォントフォルダが見つかりません: {font_dir}")
+
+# 2) フォントファイルをすべて登録
+for fname in os.listdir(font_dir):
+    if fname.lower().endswith(".ttf"):
+        font_path = os.path.join(font_dir, fname)
+        font_manager.fontManager.addfont(font_path)
+
+# 3) 登録されたフォント一覧からIPAex系を探す
+ipa_fonts = [f.name for f in font_manager.fontManager.ttflist if "IPAex" in f.name]
+if not ipa_fonts:
+    st.error("IPAexフォントが登録されていません。フォント名候補: " +
+             ",".join(f.name for f in font_manager.fontManager.ttflist[:5]))
+else:
+    # 一番目を採用
+    selected_font = ipa_fonts[0]
+    mpl.rcParams["font.family"] = selected_font
+    mpl.rcParams["font.sans-serif"] = selected_font
+    st.write(f"→ Matplotlib フォントに設定: {selected_font}")
 
 # ===== データ取得関数 =====
 @st.cache_data(show_spinner=False)
